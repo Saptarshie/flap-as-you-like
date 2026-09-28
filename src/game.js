@@ -376,7 +376,7 @@ class Game {
     this.bossCorridorActive = true;
     this.obstacles.clearSpan(-Infinity, this.player.pos.z + 70);
     this.obstacles.spawnZ = this.player.pos.z - 340;
-    this.obstacles.beginBossArena(this.player.pos.z);
+    this.obstacles.beginBossArena(this.player.pos.z, this.boss.encounterNumber);
     this.enemies.reset();
     this.tornados.reset();
     this.landmarks.clearTunnels();
@@ -531,8 +531,11 @@ class Game {
         this.audio.pop();
       }, b)) hit = true;
       if (!hit && this.boss.active) {
-        hit = this.boss.tryMinionBallHit(b, CFG.combat.ballRadius, (pos) => {
-          this.addScore(CFG.score.bossMinionKill * this.multiplier);
+        hit = this.boss.tryMinionBallHit(b, CFG.combat.ballRadius, (pos, type) => {
+          const base = type === 'bomber' ? CFG.score.bossMinionBomberKill
+            : type === 'shooter' || type === 'speeder' ? CFG.score.bossMinionShooterKill
+            : CFG.score.bossMinionKill;
+          this.addScore(base * this.multiplier);
           this.effects.spawnDebris(pos.x, pos.y, pos.z);
           this.audio.pop();
         });

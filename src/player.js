@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { CFG } from './config.js';
 
-export function flapImpulseForLevel(level) {
+export function flapImpulseForLevel(level, worldSpeed = CFG.difficulty.speedStart) {
   const L = Math.min(9, Math.max(1, level | 0));
-  return CFG.bird.flapImpulse * (0.5 + 0.125 * (L - 1));
+  const base = CFG.bird.flapImpulse * (0.5 + 0.125 * (L - 1));
+  const calib = 1 + (Math.max(34, Math.min(82, worldSpeed)) - 34) / 48 * CFG.bird.flapSpeedCalib;
+  return base * calib;
 }
 
 export class Player {
@@ -39,6 +41,7 @@ export class Player {
     this.health = CFG.bird.healthMax;
     this.healT = 0;
     this.hitInvuln = 0;
+    this.worldSpeed = CFG.difficulty.speedStart;
   }
 
   reset() {
@@ -56,6 +59,7 @@ export class Player {
     this.health = CFG.bird.healthMax;
     this.healT = 0;
     this.hitInvuln = 0;
+    this.worldSpeed = CFG.difficulty.speedStart;
     this.mesh.rotation.set(0, 0, 0);
     this.mesh.visible = true;
   }
@@ -66,7 +70,7 @@ export class Player {
   }
 
   flap(audio) {
-    this.vy = flapImpulseForLevel(this.flapLevel);
+    this.vy = flapImpulseForLevel(this.flapLevel, this.worldSpeed);
     this.wingBoost = 1;
     this.diveT = 0;
     audio?.flap();
@@ -100,6 +104,7 @@ export class Player {
   update(dt, speed, axisX, turbulence, audio, groundY = 0) {
     if (!this.alive) return;
     const B = CFG.bird;
+    this.worldSpeed = speed;
     if (this.shield > 0) this.shield -= dt;
     if (this.speedBoost > 0) this.speedBoost -= dt;
     if (this.diveT > 0) this.diveT -= dt;

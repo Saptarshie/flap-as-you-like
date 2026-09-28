@@ -133,9 +133,10 @@ export class Obstacles {
     rec.obj.rotation.set(0.2 * index, index * 1.7, 0.1 * side);
   }
 
-  beginBossArena(birdZ) {
+  beginBossArena(birdZ, encounterNumber = 1) {
     this.endBossArena();
-    for (let i = 0; i < 3; i++) {
+    const count = Math.min(5, 3 + Math.floor((encounterNumber - 1) / 2));
+    for (let i = 0; i < count; i++) {
       const rec = { obj: this._takeBossProp() };
       this._placeBossProp(rec, birdZ - 95 - i * 105, i);
       this.bossProps.push(rec);

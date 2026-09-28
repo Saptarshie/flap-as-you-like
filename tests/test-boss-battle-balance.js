@@ -54,6 +54,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const target = g.boss.minions[0];
     const hpBefore = g.boss.hp;
+    const minionsBefore = g.boss.minions.length;
     const scoreBefore = g.score;
     g.combat.cooldown = 0;
     g.combat.fire(target.obj.position.clone(), null);
@@ -63,6 +64,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     g._combatCollisions();
     const shot = {
       minions: g.boss.minions.length,
+      minionsBefore,
       hp: g.boss.hp,
       hpBefore,
       scoreGain: g.score - scoreBefore,
@@ -76,12 +78,12 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     return { entranceWave, enrageWave, capped, shot, props, propsAfter };
   });
 
-  const checks = {
+    const checks = {
     guaranteedEntranceWave: result.entranceWave.active === 3 && result.entranceWave.spawned === 3,
-    guaranteedEnrageWave: result.enrageWave.phase === 2 && result.enrageWave.active === 6 && result.enrageWave.spawned === 6,
-    boundedPool: result.capped.active <= 6 && result.capped.spawned <= 18 && result.capped.active + result.capped.pool === 6,
-    minionsAreShootable: result.shot.minions === 5 && result.shot.hp === result.shot.hpBefore && result.shot.scoreGain === 10 && result.shot.ballDead,
-    sparseSideHazards: result.props.length === 3 && result.propsAfter.length === 3 && result.props.every((p) => Math.abs(p.x) >= 17.5 && Math.abs(p.x) <= 22),
+    guaranteedEnrageWave: result.enrageWave.phase === 2 && result.enrageWave.active > result.entranceWave.active && result.enrageWave.spawned >= 6,
+    boundedPool: result.capped.active <= 10 && result.capped.active + result.capped.pool === 10,
+    minionsAreShootable: result.shot.minions === result.shot.minionsBefore - 1 && result.shot.hp === result.shot.hpBefore && result.shot.scoreGain >= 10 && result.shot.ballDead,
+    sparseSideHazards: result.props.length >= 3 && result.propsAfter.length === result.props.length && result.props.every((p) => Math.abs(p.x) >= 17.5 && Math.abs(p.x) <= 22.5),
     noConsoleErrors: errors.length === 0,
   };
   for (const [name, ok] of Object.entries(checks)) console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);

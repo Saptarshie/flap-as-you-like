@@ -33,7 +33,7 @@ then open http://localhost:8321
 
 ### Flight
 - **Flap** has real punch (~4m rise per tap at default power) with soft gravity and a hard terminal-velocity clamp.
-- **Flap power 1-9** is adjustable live during play (`1`-`9`): 1 = gentlest hop, 5 = default, 9 = max climb (~9m per tap). HUD shows the current level.
+- **Flap power 1-9** is adjustable live during play (`1`-`9`): 1 = gentlest hop, 5 = default, 9 = max climb (~9m per tap). HUD shows the current level. Flap impulse also auto-calibrates +22% by top world speed so climbing keeps pace with the escalating world.
 - **Dive** (`Down`/`S`): folds the wings and drops altitude fast -- the opposite of flapping.
 - **Glide** (`G`): wings lock spread, near-zero gravity, precise steering.
 - **HUD altitude readout** (`ALT xx.x m`) shows live height above the terrain.
@@ -46,7 +46,7 @@ then open http://localhost:8321
 ### Combat & villains
 - `Space` fires energy balls (shots always outpace the world).
 - **Three villain types**: red chasers, fast blue weavers, heavy black bombers. Contact costs one healing charge; blasting them scores 15/20/25.
-- **Boss: MEGA BEAK** at 1400m and every ~2200m after: swoops, fires feather bullets, and launches frequent three-bird angry formations (guaranteed on arrival and enrage, up to six active). Minions are shootable for +10; your energy balls remove one point from MEGA BEAK's visible strength bar; defeat it for +120.
+- **Boss: MEGA BEAK** at 1400m and every ~2200m after: swoops, fires feather bullets, and launches angry-bird formations that grow with every encounter (3 → 10 birds). Each wave mixes four identifiable types: **red chasers** that track you, **blue shooters** that hold near the fight and snipe fast cyan bolts, **yellow speeders** that zigzag fast, and **black bombers** that close in over your head and drop egg-bombs you must dodge or shoot. Minions are shootable (+10, +15 shooters/speeders, +20 bombers); your energy balls remove one point from MEGA BEAK's visible strength bar; defeat it for +120.
 - When MEGA BEAK arrives, the game opens a dedicated **combat corridor**: ordinary clutter is cleared, but three widely spaced side-lane rock spires cycle through as real hazards without blocking the central firing line. Boss bullets/minions, powerups and player shooting remain active.
 
 ### Healing
@@ -115,6 +115,7 @@ node tests/test-endless.js       # fields never empty at 13.6km, hard mode (3/3)
 node tests/test-landmarks.js     # tunnel centre pass +10, wall crash (2/2)
 node tests/test-flight-ui.js     # altitude HUD, 1-9 flap power, dive, tornado air-field, clear tunnels, blob shadow (9/9)
 node tests/test-health-boss-visuals.js # 3x healing, regeneration, boss damage/HUD, tornado inflow, environment detail
+node tests/test-boss-waves.js     # wave scaling 3->10, 4 minion types/behaviors/colors, bolts aim at player, bomber egg runs (12/12)
 node tests/test-performance-boss-arena.js # optimized pipeline + clear, resumable boss combat corridor
 node tests/test-headless.js      # menu/play/death/restart regression
 ```
