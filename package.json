@@ -1,0 +1,22 @@
+{
+    "name":  "3d-flappy",
+    "version":  "1.0.0",
+    "description":  "3D Flappy Bird-style endless flight game in Three.js",
+    "main":  "index.js",
+    "scripts":  {
+                    "start":  "node server.js",
+                    "assets":  "node build-assets.mjs",
+                    "test":  "node tests/test-headless.js",
+                    "test:integration":  "node tests/test-integration.js"
+                },
+    "keywords":  [
+
+                 ],
+    "author":  "",
+    "license":  "ISC",
+    "type":  "commonjs",
+    "dependencies":  {
+                         "puppeteer-core":  "^25.12.0",
+                         "three":  "^0.170.0"
+                     }
+}

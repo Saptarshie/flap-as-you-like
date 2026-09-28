@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Flappy Flight 3D — Adventure</title>
+<link rel="icon" href="data:," />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./lib/three.module.js"
+  }
+}
+</script>
+<style>
+  :root {
+    --panel: rgba(20, 34, 56, 0.62);
+    --accent: #ffd23f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0b1524; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #ui { position: fixed; inset: 0; pointer-events: none; }
+  .hidden { display: none !important; }
+  #hud {
+    position: absolute; top: 14px; left: 16px; right: 16px;
+    display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .pill {
+    background: var(--panel); color: #fff; border-radius: 14px;
+    padding: 8px 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    font-size: 15px; letter-spacing: 0.5px;
+  }
+  .pill b { color: var(--accent); font-weight: 700; }
+  #scorePill { min-width: 92px; text-align: center; }
+  #healthPill { min-width: 180px; }
+  #healthTrack { display: inline-flex; width: 92px; height: 10px; gap: 3px; vertical-align: 1px; }
+  .healthCell { position: relative; flex: 1; overflow: hidden; border-radius: 4px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); }
+  .healthCell::after { content: ''; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--fill, 0)); background: linear-gradient(90deg, #ff4e50, #ffcf4a); transition: transform 0.15s linear; }
+  #healthText { color: #fff; font-weight: 800; margin-left: 5px; }
+  #score { font-size: 22px; font-weight: 800; color: #fff; display: inline-block; }
+  #score.pop { animation: pop 0.35s ease; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.45); color: var(--accent); }
+    100% { transform: scale(1); }
+  }
+  .chip { border-radius: 999px; padding: 6px 13px; font-size: 13px; font-weight: 700; color: #fff; }
+  #chipShield { background: rgba(51,170,255,0.55); }
+  #chipBoost { background: rgba(255,51,85,0.55); }
+  #chipMult { background: rgba(170,68,255,0.55); }
+  #chipGlide { background: rgba(80,220,140,0.5); }
+  #hint {
+    position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,0.92); background: var(--panel);
+    padding: 6px 16px; border-radius: 12px; font-size: 13px;
+    white-space: nowrap;
+  }
+  #flash {
+    position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,225,120,0.5) 0%, rgba(255,225,120,0) 55%);
+    opacity: 0; pointer-events: none;
+  }
+  #flash.pulse { animation: ringflash 0.6s ease-out; }
+  @keyframes ringflash { 0% { opacity: 1; } 100% { opacity: 0; } }
+  #bossBar {
+    position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+    width: min(520px, 70vw); height: 22px;
+    background: rgba(10, 16, 28, 0.65); border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255, 90, 90, 0.55);
+  }
+  #bossFill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, #ff5544, #ff8866);
+    transition: width 0.18s ease;
+  }
+  #bossName {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 800; letter-spacing: 2px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  #bossHp { margin-left: 10px; color: #ffe08a; }
+  #touchUI { position: absolute; right: 14px; bottom: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .tbtn {
+    pointer-events: auto; width: 64px; height: 64px; border-radius: 50%;
+    background: var(--panel); color: #fff; font-size: 13px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.3);
+    user-select: none; -webkit-user-select: none; touch-action: none;
+  }
+  .tbtn:active { background: rgba(80, 140, 220, 0.55); }
+  .panel {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    background: var(--panel); color: #fff; text-align: center;
+    padding: 30px 44px; border-radius: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    pointer-events: none; max-height: 92vh; overflow: hidden;
+  }
+  .panel h1 { font-size: 40px; letter-spacing: 1px; margin-bottom: 4px;
+    background: linear-gradient(120deg, #ffd23f, #ff8c42); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .panel h2 { font-size: 32px; margin-bottom: 10px; color: #ff8c42; }
+  .panel p { margin: 6px 0; font-size: 14px; color: rgba(255,255,255,0.9); }
+  .panel .big { font-size: 26px; font-weight: 800; color: var(--accent); margin: 2px 0; }
+  .panel .cta {
+    margin-top: 14px; font-size: 16px; font-weight: 700; color: #fff;
+    animation: breathe 1.6s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%, 100% { opacity: 0.65; } 50% { opacity: 1; } }
+  .keys { margin-top: 10px; font-size: 13px; color: rgba(255,255,255,0.78); line-height: 1.9; }
+  .keys span { display: inline-block; border: 1px solid rgba(255,255,255,0.35); border-radius: 6px; padding: 1px 7px; margin: 0 2px; }
+  #board { text-align: left; font-size: 12.5px; margin-top: 10px; max-height: 30vh; overflow-y: auto; pointer-events: auto; }
+  #board ol { margin-left: 18px; }
+  .lb-row { padding: 2px 6px; color: rgba(255,255,255,0.85); border-radius: 6px; }
+  .lb-row.me { background: rgba(255,210,63,0.2); color: #ffd23f; font-weight: 700; }
+  #loading {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #cfe3ff; font-size: 18px; background: #0b1524; z-index: 10;
+  }
+  #loading.done { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+  @media (max-width: 640px) {
+    .panel { padding: 22px 22px; width: 88vw; }
+    .panel h1 { font-size: 28px; }
+    #bossBar { top: 116px; width: 82vw; }
+    #hint { top: 82px; max-width: 88vw; overflow: hidden; text-overflow: ellipsis; }
+  }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="ui">
+  <div id="hud" class="hidden">
+    <div class="pill" id="scorePill"><b>SCORE</b> <span id="score">0</span></div>
+    <div class="pill" id="healthPill"><b>HEAL</b> <span id="healthTrack"><i class="healthCell"></i><i class="healthCell"></i><i class="healthCell"></i></span><span id="healthText">3x</span></div>
+    <div class="pill"><b>◈</b> <span id="coins">0</span></div>
+      <div class="pill"><b>km/h</b> <span id="speed">0</span></div>
+      <div class="pill"><b>ALT</b> <span id="alt">0.0</span>m</div>
+      <div class="pill"><b>FLAP</b> <span id="flapLvl">5</span></div>
+    <div class="chip hidden" id="chipGlide">GLIDE</div>
+    <div class="chip hidden" id="chipShield">🛡 SHIELD</div>
+    <div class="chip hidden" id="chipBoost">⚡ BOOST</div>
+    <div class="chip hidden" id="chipMult">x2 score</div>
+  </div>
+  <div id="bossBar" class="hidden"><div id="bossFill"></div><div id="bossName">MEGA BEAK <span id="bossHp">6 / 6</span></div></div>
+  <div id="hint" class="hidden"></div>
+  <div id="flash"></div>
+  <div id="touchUI" class="hidden">
+    <div class="tbtn" id="btnGlide" data-btn="glide">GLIDE</div>
+    <div class="tbtn" id="btnShoot" data-btn="shoot">SHOOT</div>
+  </div>
+  <div id="menu" class="panel hidden">
+    <h1>FLAPPY FLIGHT 3D</h1>
+    <p>Adventure edition — endless skies, villains, storms and mystic portals</p>
+    <div class="keys">
+      <span>↑</span> flap &nbsp; <span>←</span><span>→</span> steer &nbsp; <span>G</span> glide &nbsp; <span>Space</span> shoot &nbsp; <span>M</span> mute
+    </div>
+    <p class="cta">Press Space / Tap to take off</p>
+  </div>
+  <div id="gameover" class="panel hidden">
+    <h2>FEATHERS DOWN</h2>
+    <p>Score</p><div class="big" id="finalScore">0</div>
+    <p><span id="finalCoins">0</span> coins · <span id="finalDist">0.00 km</span> · <span id="finalBoss">0</span> bosses · best <span id="best">0</span></p>
+    <p id="rank">Not in top 10 yet</p>
+    <div id="board"></div>
+    <p class="cta">Space / Tap to fly again</p>
+  </div>
+</div>
+<div id="loading">Loading the sky…</div>
+<script type="module" src="src/game.js"></script>
+</body>
+</html>
