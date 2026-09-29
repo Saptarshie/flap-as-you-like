@@ -47,7 +47,8 @@ then open http://localhost:8321
 - `Space` fires energy balls (shots always outpace the world).
 - **Three villain types**: red chasers, fast blue weavers, heavy black bombers. Contact costs one healing charge; blasting them scores 15/20/25.
 - **Boss: MEGA BEAK** at 1400m and every ~2200m after: swoops, fires feather bullets, and launches angry-bird formations that grow with every encounter (3 → 10 birds). Each wave mixes four identifiable types: **red chasers** that track you, **blue shooters** that hold near the fight and snipe fast cyan bolts, **yellow speeders** that zigzag fast, and **black bombers** that close in over your head and drop egg-bombs you must dodge or shoot. Minions are shootable (+10, +15 shooters/speeders, +20 bombers); your energy balls remove one point from MEGA BEAK's visible strength bar; defeat it for +120.
-- When MEGA BEAK arrives, the game opens a dedicated **combat corridor**: ordinary clutter is cleared, but three widely spaced side-lane rock spires cycle through as real hazards without blocking the central firing line. Boss bullets/minions, powerups and player shooting remain active.
+- When MEGA BEAK arrives, the game opens a **combat corridor** with a realistic transition: nothing on screen vanishes -- existing gates finish scrolling past while only *new* spawning pauses. Three-to-five recycled arena rocks (mixed left/right/low-middle placements) add challenge without blocking the firing line. Ordinary gates/enemies/tornados/tunnels/portals resume after defeat.
+- Waves keep escalating for the **entire fight** (no cap), spawning every 4-6s while a formation has room; minions persist until shot down, kamikaze-hit, or overtaken behind you.
 
 ### Healing
 - You begin with **3x healing charges**. A collision or enemy/boss attack removes one charge and the run continues; a short recovery window prevents one impact from draining multiple charges.
@@ -62,13 +63,14 @@ then open http://localhost:8321
 - Gates (gaps tighten 15→8.2), gold rings, coin arcs, floating boulders.
 
 ### Caves & mountains
-- **Cave tunnels** wrap the flight line every 700-1200m: fly the centreline for +10 and a rumbling hum; clip the walls and it's over.
+- **Cave tunnels** wrap the flight line every 700-1200m: fly the centreline for +10 and a rumbling hum; clip the walls and it's over. Gates keep clear of both tunnel mouths so entrances stay readable.
 - **Tunnels are obstacle-free**: gates, movers and coin arcs are never spawned inside a cave span (existing ones are swept clear when a cave appears) -- the walls are the challenge.
 - **Snow-capped mountain ranges** use varied silhouettes, scales and depth-dependent parallax; waterfalls flank the valley, bird flocks cross overhead, and ground mist drifts through.
 - Terrain uses slope-aware grass, exposed-rock strata, deterministic multi-scale surface texture, and subtly animated wave texture on the water.
 
 ### Endless & escalating
 - The world **never empties**: a scroll-synced spawn corridor keeps gates/movers flowing forever (verified to 13km+). Spacing 55→33, gaps 15→8.2, mover density and villain waves rise with distance, storms intensify. Milestone toasts announce the escalation.
+- **Speed saturates at 250 km/h**: world speed follows a logarithmic-style exponential-saturation curve from ~122 km/h, rising fast early (~171 at 2km, ~202 at 4km) and easing toward the 250 cap (247 by 16km) so late-game pace plateaus instead of exploding. Flap power auto-calibrates to this curve.
 
 ### Performance
 - The normal render path is optimized for integrated and mobile GPUs: capped pixel ratio, direct tone-mapped rendering without depth-of-field/fullscreen bloom, selective 512px shadows, scaled tornado/rain particles, and cached HUD writes.
@@ -117,6 +119,7 @@ node tests/test-flight-ui.js     # altitude HUD, 1-9 flap power, dive, tornado a
 node tests/test-health-boss-visuals.js # 3x healing, regeneration, boss damage/HUD, tornado inflow, environment detail
 node tests/test-boss-waves.js     # wave scaling 3->10, 4 minion types/behaviors/colors, bolts aim at player, bomber egg runs (12/12)
 node tests/test-performance-boss-arena.js # optimized pipeline + clear, resumable boss combat corridor
+node tests/test-speed-curve.js    # speed saturates log-style at 250 km/h, never exceeds (6/6)
 node tests/test-headless.js      # menu/play/death/restart regression
 ```
 

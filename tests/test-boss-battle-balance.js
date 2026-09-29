@@ -83,7 +83,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     guaranteedEnrageWave: result.enrageWave.phase === 2 && result.enrageWave.active > result.entranceWave.active && result.enrageWave.spawned >= 6,
     boundedPool: result.capped.active <= 10 && result.capped.active + result.capped.pool === 10,
     minionsAreShootable: result.shot.minions === result.shot.minionsBefore - 1 && result.shot.hp === result.shot.hpBefore && result.shot.scoreGain >= 10 && result.shot.ballDead,
-    sparseSideHazards: result.props.length >= 3 && result.propsAfter.length === result.props.length && result.props.every((p) => Math.abs(p.x) >= 17.5 && Math.abs(p.x) <= 22.5),
+    sparseSideHazards: result.props.length >= 3 && result.propsAfter.length === result.props.length && result.props.every((p) => Math.abs(p.x) <= 22.5 && (p.x === 0 ? p.r <= 2 : Math.abs(p.x) >= 17)),
     noConsoleErrors: errors.length === 0,
   };
   for (const [name, ok] of Object.entries(checks)) console.log((ok ? 'PASS' : 'FAIL') + '  ' + name);

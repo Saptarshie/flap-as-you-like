@@ -374,8 +374,7 @@ class Game {
   _beginBossCorridor() {
     if (this.bossCorridorActive) return;
     this.bossCorridorActive = true;
-    this.obstacles.clearSpan(-Infinity, this.player.pos.z + 70);
-    this.obstacles.spawnZ = this.player.pos.z - 340;
+    this.obstacles.spawnZ = Math.min(this.obstacles.spawnZ, this.player.pos.z - 340);
     this.obstacles.beginBossArena(this.player.pos.z, this.boss.encounterNumber);
     this.enemies.reset();
     this.tornados.reset();
@@ -450,7 +449,8 @@ class Game {
   _applyDifficulty() {
     const D = CFG.difficulty;
     const pd = Math.min(1, this.distance / 6000);
-    this.speed = damp(this.speed, D.speedStart + (D.speedMax - D.speedStart) * pd, 0.5, 0.016);
+    const speedTarget = D.speedMax - (D.speedMax - D.speedStart) * Math.exp(-this.distance / D.speedLogScale);
+    this.speed = damp(this.speed, speedTarget, 0.5, 0.016);
     this.gap = D.gapStart - (D.gapStart - D.gapMin) * pd;
     this.obstacleSpacing = D.spacingStart - (D.spacingStart - D.spacingMin) * pd;
     this.obstacles.setDifficulty(this.gap, this.obstacleSpacing, pd);

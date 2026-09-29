@@ -25,7 +25,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const g = window.__game;
     g.noDeath = true;
     g.obstacles.clearSpan(-1000, 100);
-    g.obstacles._spawnGate(-100);
+    g.obstacles._spawnGate(-60);
     g.enemies.spawn(-80, 'chase', 0);
     g.tornados.spawn(-70);
     g.landmarks._spawnTunnel(-120);
@@ -37,8 +37,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     g._scheduleThreats();
     const entered = {
       corridor: g.bossCorridorActive,
-      gates: g.obstacles.gates.length,
-      movers: g.obstacles.movers.length,
+      gatesKept: g.obstacles.gates.length,
       enemies: g.enemies.count,
       tornados: g.tornados.count,
       tunnels: g.landmarks.tunnels.length,
@@ -54,7 +53,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       g._scheduleThreats();
     }
     const held = {
-      gates: g.obstacles.gates.length,
+      gatesGone: g.obstacles.gates.length,
       enemies: g.enemies.count,
       tornados: g.tornados.count,
       tunnels: g.landmarks.tunnels.length,
@@ -101,8 +100,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   });
 
   const checks = {
-    clearsArena: result.entered.corridor && result.entered.gates === 0 && result.entered.movers === 0 && result.entered.enemies === 0 && result.entered.tornados === 0 && result.entered.tunnels === 0 && !result.entered.portal && result.entered.bossProps === 3,
-    staysClear: result.held.gates === 0 && result.held.enemies === 0 && result.held.tornados === 0 && result.held.tunnels === 0 && !result.held.portal && result.held.cursorFrozen && result.held.bossProps === 3,
+    naturalTransition: result.entered.corridor && result.entered.gatesKept >= 1 && result.entered.enemies === 0 && result.entered.tornados === 0 && result.entered.tunnels === 0 && !result.entered.portal && result.entered.bossProps === 3,
+    ordinaryPaused: result.held.gatesGone === 0 && result.held.enemies === 0 && result.held.tornados === 0 && result.held.tunnels === 0 && !result.held.portal && result.held.cursorFrozen && result.held.bossProps === 3,
     shootingWorks: result.shotDamaged,
     resumesWithoutBurst: !result.resumed.corridor && result.resumed.enemyDelay === 240 && result.resumed.tornadoDelay === 320 && result.resumed.tunnelDelay >= 700 && result.resumed.bossDelay === 2200,
     optimizedPipeline: result.renderRatio <= 1.25 && !result.bloom && result.shadowSize === 512 && result.shadowCasters < result.meshes * 0.2 && result.tornadoDust === 120,

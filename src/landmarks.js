@@ -295,15 +295,15 @@ export class Landmarks {
     obj.rotation.set(0, this.rng() < 0.5 ? 0 : Math.PI, 0);
     obj.scale.setScalar(1);
     this.tunnels.push({ obj, z, prevZ: z, passed: false, crashed: false });
-    const z0 = z - TUN_HALF - 10;
-    const z1 = z + TUN_HALF + 10;
+    const z0 = z - TUN_HALF - 18;
+    const z1 = z + TUN_HALF + 18;
     if (this.hooks && typeof this.hooks.onClearSpan === 'function') this.hooks.onClearSpan(z0, z1);
   }
 
   blockedAt(z) {
     for (let i = 0; i < this.tunnels.length; i++) {
       const it = this.tunnels[i];
-      if (z >= it.z - TUN_HALF - 10 && z <= it.z + TUN_HALF + 10) return true;
+      if (z >= it.z - TUN_HALF - 18 && z <= it.z + TUN_HALF + 18) return true;
     }
     return false;
   }

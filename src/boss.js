@@ -25,7 +25,7 @@ const FEATHER_SPEED = 28;
 const FEATHER_LIFE = 4.5;
 const FEATHER_HIT_SQ = 1.2 * 1.2;
 const MINION_SPEED = 20;
-const MINION_LIFE = 6;
+const MINION_LIFE = 26;
 const TUMBLE_TIME = 2.5;
 const TUMBLE_GRAV = 12;
 const KILL_Y = -8;
@@ -39,7 +39,7 @@ const EGG_FALL = 26;
 const SHOOTER_HOLD_Z = -22;
 const SHOOTER_FIRE_CD = 1.1;
 const BOMBER_DROP_CD = 1.1;
-const MAX_WAVES = 4;
+const SUMMON_CD_MIN = 4.2;
 const TYPE_SPEED = { chaser: 17, speeder: 30, shooter: 14, bomber: 22 };
 const BOLT_POOL_SIZE = 10;
 const BOLT_SPEED = 30;
@@ -237,6 +237,7 @@ export class Boss {
     this._hitFlash = 0;
     this._minionsSpawned = 0;
     this._wavesSpawned = 0;
+    this._summonCd = 0;
   }
 
   reset() {
@@ -271,6 +272,7 @@ export class Boss {
     this._hitFlash = 0;
     this._minionsSpawned = 0;
     this._wavesSpawned = 0;
+    this._summonCd = 0;
   }
 
   maybeSpawn(distance, speedNow) {
@@ -310,6 +312,7 @@ export class Boss {
     for (const b of this.bolts) { b.obj.visible = false; this._boltPool.push(b.obj); }
     this.bolts.length = 0;
     this._wavesSpawned = 0;
+    this._summonCd = 0;
   }
 
   _waveSize() {
@@ -343,6 +346,7 @@ export class Boss {
     this._birdPos = birdPos;
     this._time = t;
     this._invuln = Math.max(0, this._invuln - dt);
+    if (this._summonCd > 0) this._summonCd -= dt;
     this._hitFlash = Math.max(0, this._hitFlash - dt * 3);
     this.inner.scale.setScalar(this._baseScale * (1 + this._hitFlash * 0.13));
 
@@ -441,9 +445,8 @@ export class Boss {
 
   _pickAttack() {
     const wave = this._waveSize();
-    const canSummon = this._wavesSpawned < MAX_WAVES
-      && this._minionPool.length >= Math.min(3, wave)
-      && this._minionsSpawned + 3 <= MINION_POOL_SIZE * MAX_WAVES;
+    const canSummon = this._minionPool.length >= Math.min(3, wave)
+      && (this._summonCd == null || this._summonCd <= 0);
     const chance = this.phase >= 2 ? 0.65 : 0.42;
     if (canSummon && this.rng() < chance) return 'minions';
     return this.rng() < 0.45 ? 'swoop' : 'feathers';
@@ -570,11 +573,10 @@ export class Boss {
 
   _summonMinions() {
     const bird = this._birdPos;
-    if (!bird || this._wavesSpawned >= MAX_WAVES) return;
+    if (!bird) return;
     if (this._time == null) this._time = 0;
     const p = this.group.position;
     const n = this._waveSize();
-    let slot = 0;
     const spread = (i, n) => (n <= 1 ? 0 : (i / (n - 1) - 0.5) * 2) * Math.min(16, 2.5 + n * 1.8);
     const used = new Set();
     const takeObj = () => {
@@ -612,9 +614,9 @@ export class Boss {
         wob: this.rng() * 6.28,
       });
       this._minionsSpawned++;
-      slot++;
     }
     this._wavesSpawned++;
+    this._summonCd = SUMMON_CD_MIN + this.rng() * 2;
   }
 
   _minionsUpdate(dt, birdPos) {

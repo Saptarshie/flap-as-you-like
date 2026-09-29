@@ -120,17 +120,24 @@ export class Obstacles {
   }
 
   _placeBossProp(rec, z, index) {
-    const side = index % 2 ? 1 : -1;
+    const layout = [
+      { side: 1, off: 17.5, y: 15 },
+      { side: -1, off: 19.3, y: 8 },
+      { side: 0, off: 0, y: 5.2 },
+      { side: -1, off: 21.1, y: 17 },
+      { side: 1, off: 18.4, y: 6 },
+    ];
+    const L = layout[index % layout.length];
     rec.z = z;
     rec.prevZ = z;
-    rec.x = side * (17.5 + (index % 3) * 1.8);
-    rec.baseY = index % 2 ? 15 : 8;
-    rec.r = 2.3;
+    rec.x = L.side * L.off;
+    rec.baseY = L.y;
+    rec.r = L.side === 0 ? 1.9 : 2.3;
     rec.hit = false;
     rec.obj.visible = true;
     rec.obj.position.set(rec.x, rec.baseY, z);
     rec.obj.scale.set(2.1, 2.8, 2.1);
-    rec.obj.rotation.set(0.2 * index, index * 1.7, 0.1 * side);
+    rec.obj.rotation.set(0.2 * index, index * 1.7, 0.1 * (L.side || 1));
   }
 
   beginBossArena(birdZ, encounterNumber = 1) {
@@ -190,11 +197,12 @@ export class Obstacles {
     const topBottom = gapY + half;
     const groundY = terrainHeight(0, z);
     const spire = this.models.rockSpire;
+    const monolithX = [0, -9, 9, -6, 6][this.gatesSpawned % 5] * (0.75 + this.rng() * 0.25);
     const bottomH = Math.max(0, bottomTop - groundY + 2);
     if (bottomH > 3) {
       const b = spire.clone(true);
       b.scale.set(4.4, bottomH / 4.1, 2.4);
-      b.position.set(0, bottomTop - bottomH, 0);
+      b.position.set(monolithX, bottomTop - bottomH, 0);
       group.add(b);
     }
     const slab = this.models.rockA.clone(true);

@@ -4,7 +4,9 @@ import { CFG } from './config.js';
 export function flapImpulseForLevel(level, worldSpeed = CFG.difficulty.speedStart) {
   const L = Math.min(9, Math.max(1, level | 0));
   const base = CFG.bird.flapImpulse * (0.5 + 0.125 * (L - 1));
-  const calib = 1 + (Math.max(34, Math.min(82, worldSpeed)) - 34) / 48 * CFG.bird.flapSpeedCalib;
+  const D = CFG.difficulty;
+  const w = Math.max(D.speedStart, Math.min(D.speedMax, worldSpeed));
+  const calib = 1 + (w - D.speedStart) / (D.speedMax - D.speedStart) * CFG.bird.flapSpeedCalib;
   return base * calib;
 }
 
